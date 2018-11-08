@@ -127,6 +127,8 @@ export async function getIgnorer(rootPath: string) {
     "node_modules",
     ".git",
     GARDEN_DIR_NAME,
+    // TODO Take a better look at the temp files mutagen creates
+    ".mutagen-*",
   ])
 
   return ig
