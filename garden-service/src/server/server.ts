@@ -9,6 +9,7 @@
 import chalk from "chalk"
 import Koa = require("koa")
 import Router = require("koa-router")
+import cors = require("@koa/cors")
 import websockify = require("koa-websocket")
 import bodyParser = require("koa-bodyparser")
 import dedent = require("dedent")
@@ -66,6 +67,7 @@ export async function createApp(garden: Garden) {
     const result = await resolveRequest(ctx, garden, commands, ctx.request.body)
 
     ctx.status = 200
+    ctx.set("Access-Control-Allow-Origin", "*")
     ctx.response.body = result
   })
 
@@ -94,6 +96,7 @@ export async function createApp(garden: Garden) {
   app.use(bodyParser())
   app.use(http.routes())
   app.use(http.allowedMethods())
+  app.use(cors({"Access-Control-Allow-Origin": "*"}))
 
   addWebsocketEndpoint(app, garden, log, commands)
 

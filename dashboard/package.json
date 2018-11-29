@@ -3,15 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "react-scripts": "2.1.1"
-  },
-  "dependencies": {
+    "@types/react-router-dom": "^4.3.1",
     "@types/jest": "^23.3.9",
     "@types/node": "^10.12.10",
     "@types/react": "^16.7.7",
     "@types/react-dom": "^16.0.11",
+    "react-scripts": "2.1.1"
+  },
+  "dependencies": {
+    "@emotion/core": "^10.0.0",
+    "@emotion/styled": "^10.0.0",
+    "axios": "^0.18.0",
+    "babel-plugin-emotion": "^10.0.0",
+    "emotion": "^10.0.0",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
+    "react-emotion": "^10.0.0",
     "react-router-dom": "^4.3.1",
     "typescript": "^3.1.6"
   },
@@ -24,6 +31,7 @@
   "eslintConfig": {
     "extends": "react-app"
   },
+  "proxy": "http://localhost:9777",
   "browserslist": [
     ">0.2%",
     "not dead",

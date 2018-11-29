@@ -582,6 +582,14 @@ export async function validateContainerModule({ moduleConfig }: ValidateModulePa
 
 // TODO: rename this plugin to docker
 export const gardenPlugin = (): GardenPlugin => ({
+  dashboardPages: [
+    {
+      title: "Container",
+      description: "Container dashboard",
+      url: "https://container.com",
+      newWindow: false,
+    },
+  ],
   moduleActions: {
     container: {
       validate: validateContainerModule,

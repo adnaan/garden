@@ -66,5 +66,7 @@
     }
   },
   "snyk": true,
-  "dependencies": {}
+  "dependencies": {
+    "@koa/cors": "^2.2.2"
+  }
 }

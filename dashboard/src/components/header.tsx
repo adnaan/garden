@@ -1,20 +1,18 @@
+import styled from "@emotion/styled/macro"
 import React from "react"
-import { Link } from "react-router-dom"
+
+const Wrapper = styled.div`
+  border: 1px solid green;
+`
 
 export default () => (
-  <div>
+  <Wrapper>
+    <h1>Header</h1>
     <nav>
       <ul>
         <li>
-          <Link to="/">Home</Link>
-        </li>
-        <li>
-          <Link to="/about/">About</Link>
-        </li>
-        <li>
-          <Link to="/users/">Users</Link>
         </li>
       </ul>
     </nav>
-  </div>
+  </Wrapper>
 )
