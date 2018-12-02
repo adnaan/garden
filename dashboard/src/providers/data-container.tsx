@@ -1,6 +1,8 @@
 import React, { Component } from "react"
 import { ApiResponse } from "../api"
 
+import Spinner from "../components/spinner"
+
 interface Props<T> {
   children: (data: { data: T }) => JSX.Element
   fetchFn: (...any) => Promise<ApiResponse<T>>
@@ -52,7 +54,7 @@ class DataContainer<T> extends Component<Props<T>, State<T>> {
     if (error) {
       return <div>Error: {error.message}</div>
     } else if (!isLoaded) {
-      return <div>Loading...</div>
+      return <Spinner />
     } else {
       return <div>{this.props.children({ data: result })}</div>
     }

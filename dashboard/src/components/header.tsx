@@ -1,13 +1,15 @@
 import styled from "@emotion/styled/macro"
 import React from "react"
 
+import { colors } from "../styles/variables"
+
 const Wrapper = styled.div`
-  border: 1px solid green;
+  border-bottom: 1px solid ${colors.border};
 `
 
 export default () => (
-  <Wrapper>
-    <h1>Header</h1>
+  <Wrapper className="p-1">
+    <p>Header // TODO</p>
     <nav>
       <ul>
         <li>

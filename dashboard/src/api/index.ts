@@ -11,12 +11,34 @@ export interface DashboardPage {
 
 interface Provider {
   name: string
-  dashboardPages: DashboardPage
+  dashboardPages: DashboardPage[]
+}
+
+interface Service {
+  config: any
+  name: string
+  spec: any
+}
+
+export interface Module {
+  buildPath: string
+  // version: ModuleVersion
+
+  services: Service[]
+  serviceNames: string[]
+  serviceDependencyNames: string[]
+
+  // tasks: Task<Module<M, S, T, W>>[]
+  taskNames: string[]
+  taskDependencyNames: string[]
+
+  // _ConfigType: ModuleConfig<M, S, T, W>
 }
 
 export interface GetConfigResult {
   environmentName: string
   providers: Provider[]
+  modules: Module[]
 }
 
 export interface ServiceLogEntry {

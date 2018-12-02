@@ -1,47 +1,44 @@
+import cls from "classnames"
 import { css } from "emotion/macro"
 import React from "react"
-import { BrowserRouter as Router, Route, RouteComponentProps } from "react-router-dom"
+import { Route, RouteComponentProps } from "react-router-dom"
 import * as H from "history"
 
-import ConfigProvider from "./providers/config-provider"
-
 import Logs from "./containers/logs"
+import Overview from "./containers/overview"
 import Sidebar from "./containers/sidebar"
 
 import Header from "./components/header"
 
 import { DashboardPage } from "./api"
-
-const Index = () => <h2>Home</h2>
+import { colors } from "./styles/variables"
+import "flexboxgrid/dist/flexboxgrid.min.css"
+import "./styles/padding-margin-mixin.scss"
 
 const App = () => (
-  <Router>
-    <div className="App">
-      <ConfigProvider>
-        <div className={css`
-          border: 1px solid red;
+  <div>
+    <div className={css`
           display: flex;
+          min-height: 100vh;
         `}>
-          <Sidebar />
-          <div className={css`
-              border: 1px solid blue;
+      <Sidebar />
+      <div className={css`
               display: flex;
               flex-direction: column;
               flex-grow: 1;
             `}>
-            <Header />
-            <div className={css`
-              border: 1px solid yellow;
-            `}>
-              <Route exact path="/" component={Index} />
-              <Route path="/logs/" component={Logs} />
-              <Route path="/provider/:id" component={Provider} />
-            </div>
-          </div>
+        <Header />
+        <div className={cls(css`
+              background-color: ${colors.lightGray};
+              flex-grow: 1;
+            `, "p-2")}>
+          <Route exact path="/" component={Overview} />
+          <Route path="/logs/" component={Logs} />
+          <Route path="/provider/:id" component={Provider} />
         </div>
-      </ConfigProvider>
+      </div>
     </div>
-  </Router>
+  </div>
 )
 
 interface RoutePropsWithState extends RouteComponentProps {
