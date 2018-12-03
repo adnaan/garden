@@ -209,6 +209,14 @@ export async function getGenericTaskStatus(): Promise<TaskStatus> {
 }
 
 export const genericPlugin: GardenPlugin = {
+  dashboardPages: [
+    {
+      title: "Generic",
+      description: "Generic dashboard",
+      url: "https://generic.com",
+      newWindow: false,
+    },
+  ],
   moduleActions: {
     generic: {
       validate: parseGenericModule,

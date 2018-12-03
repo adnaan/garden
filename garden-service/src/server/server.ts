@@ -8,6 +8,7 @@
 
 import chalk from "chalk"
 import Koa = require("koa")
+import serve = require("koa-static")
 import Router = require("koa-router")
 import websockify = require("koa-websocket")
 import bodyParser = require("koa-bodyparser")
@@ -16,6 +17,7 @@ import getPort = require("get-port")
 import { Garden } from "../garden"
 import { addWebsocketEndpoint } from "./websocket"
 import { prepareCommands, resolveRequest } from "./commands"
+import { join } from "path"
 
 /**
  * Start an HTTP server that exposes commands and events for the given Garden instance.
@@ -76,26 +78,27 @@ export async function createApp(garden: Garden) {
    *
    * TODO: flesh this out, just a placeholder
    */
-  http.get("/", async (ctx) => {
-    const status = await resolveRequest(ctx, garden, commands, {
-      command: "get.status",
-    })
+  // http.get("/", async (ctx) => {
+  //   const status = await resolveRequest(ctx, garden, commands, {
+  //     command: "get.status",
+  //   })
 
-    ctx.response.body = dedent`
-      <html>
-      <body>
-        <h2>Project status</h2>
-        <pre>
-      ${JSON.stringify(status.result, null, 4)}
-        </pre>
-      </body>
-      </html>
-    `
-  })
+  //   ctx.response.body = dedent`
+  //     <html>
+  //     <body>
+  //       <h2>Project status</h2>
+  //       <pre>
+  //     ${JSON.stringify(status.result, null, 4)}
+  //       </pre>
+  //     </body>
+  //     </html>
+  //   `
+  // })
 
   app.use(bodyParser())
   app.use(http.routes())
   app.use(http.allowedMethods())
+  app.use(serve(join(__dirname, "..", "..", "..", "dashboard", "build")))
 
   addWebsocketEndpoint(app, garden, log, commands)
 

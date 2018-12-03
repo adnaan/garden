@@ -161,6 +161,20 @@ export function gardenPlugin({ config }: { config: KubernetesConfig }): GardenPl
 
   return {
     config,
+    dashboardPages: [
+      {
+        title: "Kubernetes",
+        description: "Kubernetes dashboard",
+        url: "https://k8s.com",
+        newWindow: false,
+      },
+      {
+        title: "Kubernetes2",
+        description: "Kubernetes dashboard2",
+        url: "https://k8s2.com",
+        newWindow: false,
+      },
+    ],
     actions: {
       getEnvironmentStatus: getRemoteEnvironmentStatus,
       prepareEnvironment: prepareRemoteEnvironment,
