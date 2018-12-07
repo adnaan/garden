@@ -19,8 +19,9 @@ import { Garden } from "../garden"
 import { serviceFromConfig, Service, serviceSchema } from "./service"
 import * as Joi from "joi"
 import { joiArray, joiIdentifier } from "../config/common"
+import * as Bluebird from "bluebird"
 
-export interface BuildCopySpec {
+export interface FileCopySpec {
   source: string
   target: string
 }
@@ -103,7 +104,10 @@ export async function moduleFromConfig(garden: Garden, config: ModuleConfig): Pr
     _ConfigType: config,
   }
 
-  module.services = config.serviceConfigs.map(serviceConfig => serviceFromConfig(module, serviceConfig))
+  module.services = await Bluebird.map(
+    config.serviceConfigs,
+    serviceConfig => serviceFromConfig(garden, module, serviceConfig),
+  )
 
   module.tasks = config.taskConfigs.map(taskConfig => taskFromConfig(module, taskConfig))
 

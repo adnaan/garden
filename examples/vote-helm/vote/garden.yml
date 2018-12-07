@@ -1,0 +1,17 @@
+module:
+  description: Helm chart for the voting UI
+  type: helm
+  name: vote
+  serviceResource:
+    kind: Deployment
+    containerModule: vote-image
+    hotReloadArgs: [npm, run, serve]
+  dependencies:
+    - api
+  values:
+    image:
+      tag: ${modules.vote-image.version}
+    ingress:
+      enabled: true
+      paths: [/]
+      hosts: [vote.local.app.garden]

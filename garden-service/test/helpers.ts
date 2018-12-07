@@ -9,7 +9,7 @@
 import * as td from "testdouble"
 import { resolve, join } from "path"
 import { remove, readdirSync, existsSync } from "fs-extra"
-import { containerModuleSpecSchema } from "../src/plugins/container"
+import { containerModuleSpecSchema } from "../src/plugins/container/config"
 import { testExecModule, buildExecModule } from "../src/plugins/exec"
 import { TaskResults } from "../src/task-graph"
 import { validate, PrimitiveMap } from "../src/config/common"

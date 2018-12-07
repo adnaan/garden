@@ -21,9 +21,9 @@ import { readFileSync } from "fs"
 import { safeLoad } from "js-yaml"
 import { zip, omitBy, isObject } from "lodash"
 import { GardenBaseError, ConfigurationError } from "../../exceptions"
-import { KubernetesObject } from "./helm"
 import { homedir } from "os"
 import { KubernetesProvider } from "./kubernetes"
+import { KubernetesResource } from "./types"
 
 let kubeConfigStr: string
 let kubeConfig: any
@@ -89,7 +89,7 @@ export class KubeApi {
     }
   }
 
-  async readBySpec(namespace: string, spec: KubernetesObject) {
+  async readBySpec(namespace: string, spec: KubernetesResource) {
     // this is just awful, sorry. any better ideas? - JE
     const name = spec.metadata.name
 
@@ -146,8 +146,8 @@ export class KubeApi {
   }
 
   async upsert<K extends keyof CrudMapType>(
-    kind: K, namespace: string, obj: KubernetesObject,
-  ): Promise<KubernetesObject> {
+    kind: K, namespace: string, obj: KubernetesResource,
+  ): Promise<KubernetesResource> {
     const api = this[crudMap[kind].group]
 
     try {

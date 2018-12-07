@@ -112,13 +112,24 @@ export class DeployTask extends BaseTask {
     })
 
     // TODO: get version from build task results
-    const { versionString } = this.version
-    const hotReloadEnabled = includes(this.hotReloadServiceNames, this.service.name)
+    let version = this.version
+    const hotReload = includes(this.hotReloadServiceNames, this.service.name)
+
+    // add a suffix to the deployed version when hot-reloading
+    // if (hotReload) {
+    //   version = {
+    //     ...version,
+    //     versionString: version.versionString + "-hot",
+    //   }
+    // }
+
     const status = await this.garden.actions.getServiceStatus({
       service: this.service,
-      verifyHotReloadStatus: hotReloadEnabled ? "enabled" : "disabled",
       log,
+      hotReload,
     })
+
+    const { versionString } = version
 
     if (
       !this.force &&
@@ -144,7 +155,7 @@ export class DeployTask extends BaseTask {
         runtimeContext: await prepareRuntimeContext(this.garden, log, this.service.module, dependencies),
         log,
         force: this.force,
-        hotReload: hotReloadEnabled,
+        hotReload,
       })
     } catch (err) {
       log.setError()

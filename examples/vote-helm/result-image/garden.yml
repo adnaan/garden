@@ -1,0 +1,10 @@
+module:
+  description: Results UI service container
+  type: container
+  name: result-image
+  # TODO: move to the Helm chart module
+  tests:
+    - name: integ
+      command: [echo, ok]
+      dependencies:
+        - db-init

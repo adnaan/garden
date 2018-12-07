@@ -10,6 +10,7 @@ import * as Bluebird from "bluebird"
 import * as inquirer from "inquirer"
 import * as Joi from "joi"
 import { uniq, every, values, pick, find } from "lodash"
+import { safeLoadAll } from "js-yaml"
 
 import { DeploymentError, NotFoundError, TimeoutError, PluginError } from "../../exceptions"
 import {
@@ -26,13 +27,16 @@ import {
   getMetadataNamespace,
   getAllNamespaces,
 } from "./namespace"
-import { KUBECTL_DEFAULT_TIMEOUT, kubectl } from "./kubectl"
+import { KUBECTL_DEFAULT_TIMEOUT, kubectl, applyMany } from "./kubectl"
 import { name as providerName } from "./kubernetes"
 import { isSystemGarden, getSystemGarden } from "./system"
 import { PluginContext } from "../../plugin-context"
 import { LogEntry } from "../../logger/log-entry"
-import { helm } from "./helm"
 import { DashboardPage } from "../../config/dashboard"
+import { helm } from "./helm/helm-cli"
+import { KubernetesResource } from "./types"
+import { combineStates } from "../../types/service"
+import { checkResourceStatuses, waitForResources } from "./status"
 
 const MAX_STORED_USERNAMES = 5
 
@@ -77,10 +81,11 @@ export async function getRemoteEnvironmentStatus({ ctx, log }: GetEnvironmentSta
   }
 
   await prepareNamespaces({ ctx, log })
-  await helm(ctx.provider, log, "init", "--client-only")
+
+  const ready = (await checkTillerStatus(ctx, log)) === "ready"
 
   return {
-    ready: true,
+    ready,
     needUserInput: false,
   }
 }
@@ -91,13 +96,9 @@ export async function getLocalEnvironmentStatus({ ctx, log }: GetEnvironmentStat
   const dashboardPages: DashboardPage[] = []
 
   await prepareNamespaces({ ctx, log })
-  await helm(ctx.provider, log, "init", "--client-only")
 
-  // TODO: check if mkcert has been installed
-  // TODO: check if all certs have been generated
-
-  // check if system services are deployed
   if (!isSystemGarden(ctx.provider)) {
+    // Check if system services are deployed
     const sysGarden = await getSystemGarden(ctx.provider)
     const sysStatus = await sysGarden.actions.getStatus({ log })
 
@@ -113,13 +114,20 @@ export async function getLocalEnvironmentStatus({ ctx, log }: GetEnvironmentStat
       ready = false
     }
 
+    // Check Tiller status
+    const tillerStatus = await checkTillerStatus(ctx, log)
+
+    if (tillerStatus !== "ready") {
+      ready = false
+    }
+
     // Add the Kubernetes dashboard to the Garden dashboard
     const namespace = await getAppNamespace(ctx, ctx.provider)
     const defaultHostname = ctx.provider.config.defaultHostname
 
     const dashboardStatus = sysStatus.services["kubernetes-dashboard"]
     const dashboardServiceResource = find(
-      dashboardStatus.detail.remoteObjects,
+      (dashboardStatus.detail || {}).remoteObjects,
       o => o.kind === "Service",
     )
 
@@ -151,6 +159,8 @@ export async function prepareRemoteEnvironment({ ctx, log }: PrepareEnvironmentP
     await login({ ctx, log })
   }
 
+  await installTiller(ctx, log)
+
   return {}
 }
 
@@ -158,9 +168,9 @@ export async function prepareLocalEnvironment({ ctx, force, log }: PrepareEnviro
   // make sure system services are deployed
   if (!isSystemGarden(ctx.provider)) {
     await configureSystemServices({ ctx, force, log })
+    await installTiller(ctx, log)
   }
 
-  // TODO: make sure all certs have been generated
   return {}
 }
 
@@ -306,13 +316,6 @@ async function configureSystemServices(
   const sysGarden = await getSystemGarden(provider)
   const sysCtx = sysGarden.getPluginContext(provider.name)
 
-  // TODO: need to add logic here to wait for tiller to be ready
-  await helm(sysCtx.provider, log,
-    "init", "--wait",
-    "--service-account", "default",
-    "--upgrade",
-  )
-
   const sysStatus = await getLocalEnvironmentStatus({
     ctx: sysCtx,
     log,
@@ -341,4 +344,42 @@ async function configureSystemServices(
       })
     }
   }
+}
+
+async function getTillerResources(ctx: PluginContext, log: LogEntry): Promise<KubernetesResource[]> {
+  const manifests = await helm(ctx, log,
+    "init",
+    "--service-account", "default",
+    "--dry-run",
+    "--debug",
+  )
+
+  return safeLoadAll(manifests)
+}
+
+async function checkTillerStatus(ctx: PluginContext, log: LogEntry) {
+  const resources = await getTillerResources(ctx, log)
+  const api = new KubeApi(ctx.provider)
+  const namespace = await getAppNamespace(ctx, ctx.provider)
+  const statuses = await checkResourceStatuses(api, namespace, resources)
+
+  return combineStates(statuses.map(s => s.state))
+}
+
+async function installTiller(ctx: PluginContext, log: LogEntry) {
+  const entry = log.info({
+    section: "tiller",
+    msg: "Installing...",
+    status: "active",
+  })
+
+  const resources = await getTillerResources(ctx, log)
+  const pruneSelector = "app=helm,name=tiller"
+  const namespace = await getAppNamespace(ctx, ctx.provider)
+  const context = ctx.provider.config.context
+
+  await applyMany(context, resources, { namespace, pruneSelector })
+  await waitForResources({ ctx, provider: ctx.provider, serviceName: "tiller", resources, log })
+
+  entry.setSuccess("Done")
 }

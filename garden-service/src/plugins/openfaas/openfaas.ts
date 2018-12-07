@@ -46,9 +46,9 @@ import {
 import { every, values } from "lodash"
 import { dumpYaml, findByName } from "../../util/util"
 import { KubeApi } from "../kubernetes/api"
-import { waitForObjects, checkDeploymentStatus } from "../kubernetes/status"
+import { waitForResources, checkDeploymentStatus } from "../kubernetes/status"
 import { systemSymbol } from "../kubernetes/system"
-import { BaseServiceSpec } from "../../config/service"
+import { CommonServiceSpec } from "../../config/service"
 import { GardenPlugin } from "../../types/plugin/plugin"
 import { Provider, providerConfigBaseSchema } from "../../config/project"
 import { faasCli } from "./faas-cli"
@@ -82,7 +82,7 @@ export const openfaasModuleSpecSchame = execModuleSpecSchema
   .unknown(false)
   .description("The module specification for an OpenFaaS module.")
 
-export interface OpenFaasModule extends Module<OpenFaasModuleSpec, BaseServiceSpec, ExecTestSpec> { }
+export interface OpenFaasModule extends Module<OpenFaasModuleSpec, CommonServiceSpec, ExecTestSpec> { }
 export interface OpenFaasService extends Service<OpenFaasModule> { }
 
 export interface OpenFaasConfig extends Provider {
@@ -240,7 +240,13 @@ export function gardenPlugin({ config }: { config: OpenFaasConfig }): GardenPlug
 
           const deployment = (await api.apps.readNamespacedDeployment(service.name, namespace)).body
 
-          await waitForObjects({ ctx, provider: k8sProvider, service, log, objects: [deployment] })
+          await waitForResources({
+            ctx,
+            provider: k8sProvider,
+            serviceName: service.name,
+            log,
+            resources: [deployment],
+          })
 
           // TODO: avoid duplicate work here
           return getServiceStatus(params)
@@ -259,6 +265,7 @@ export function gardenPlugin({ config }: { config: OpenFaasConfig }): GardenPlug
               runtimeContext,
               buildDependencies,
               module: service.module,
+              hotReload: false,
             })
 
             found = !!status.state
