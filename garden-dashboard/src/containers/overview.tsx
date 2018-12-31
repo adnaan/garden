@@ -6,18 +6,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import React from "react"
+import React, { useContext } from "react"
 
-import { ConfigConsumer } from "../context/config"
+import { ConfigContext } from "../context/config"
 import Overview from "../components/overview"
-import { StatusConsumer } from "../context/status"
+import { StatusContext } from "../context/status"
 
-export default () => (
-  <StatusConsumer>
-    {({ status }) => (
-      <ConfigConsumer>
-        {({ config }) => <Overview config={config} status={status} />}
-      </ConfigConsumer>
-    )}
-  </StatusConsumer>
-)
+export default () => {
+  const { status } = useContext(StatusContext)
+  const { config } = useContext(ConfigContext)
+
+  return <Overview config={config} status={status} />
+}

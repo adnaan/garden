@@ -10,23 +10,22 @@ import React from "react"
 
 import { fetchStatus } from "../api"
 import { FetchStatusResponse } from "../api/types"
-import FetchContainer from "../containers/fetch-container"
+import LoadContainer from "../containers/load-container"
+import { useFetch } from "../util/use-fetch"
 
 type Context = { status: FetchStatusResponse }
-const StatusContext = React.createContext<Context | null>(null)
+const ErrorMsg = () => <p>Error retrieving status</p>
 
-const StatusConsumer = StatusContext.Consumer
+export const StatusContext = React.createContext<Context | null>(null)
 
-const Error = () => <p>Error retrieving status</p>
+export const StatusProvider: React.SFC = ({ children }) => {
+  const { data: status, loading, error } = useFetch<FetchStatusResponse>(fetchStatus)
 
-const StatusProvider = ({ children }) => (
-  <FetchContainer<FetchStatusResponse> ErrorComponent={Error} skipSpinner fetchFn={fetchStatus}>
-    {({ data: status }) => (
-      <StatusContext.Provider value={{ status }}>
+  return (
+    <StatusContext.Provider value={{ status }}>
+      <LoadContainer error={error} ErrorComponent={ErrorMsg} loading={loading}>
         {children}
-      </StatusContext.Provider>
-    )}
-  </FetchContainer>
-)
-
-export { StatusProvider, StatusConsumer }
+      </LoadContainer>
+    </StatusContext.Provider>
+  )
+}

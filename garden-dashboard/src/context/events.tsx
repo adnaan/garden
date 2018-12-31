@@ -9,21 +9,18 @@
 import React from "react"
 
 import { WsMessage } from "../api/types"
-import WsContainer from "../containers/ws-container"
+import { useWs } from "../util/use-ws"
 
 type Context = { message?: WsMessage }
-const EventContext = React.createContext<Context | null>(null)
 
-const EventConsumer = EventContext.Consumer
+export const EventContext = React.createContext<Context | null>(null)
 
-const EventProvider = ({ children }) => (
-  <WsContainer>
-    {({ message }) => (
-      <EventContext.Provider value={{ message }}>
-        {children}
-      </EventContext.Provider>
-    )}
-  </WsContainer>
-)
+export const EventProvider: React.SFC = ({ children }) => {
+  const { message } = useWs()
 
-export { EventProvider, EventConsumer }
+  return (
+    <EventContext.Provider value={{ message }}>
+      {children}
+    </EventContext.Provider>
+  )
+}

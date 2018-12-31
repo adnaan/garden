@@ -7,11 +7,11 @@
  */
 
 import { kebabCase, flatten, entries } from "lodash"
-import React from "react"
+import React, { useContext } from "react"
 
 import Sidebar from "../components/sidebar"
 import { DashboardPage } from "../api/types"
-import { StatusConsumer } from "../context/status"
+import { StatusContext } from "../context/status"
 
 export interface Page extends DashboardPage {
   path: string
@@ -41,18 +41,16 @@ const builtinPages: Page[] = [
   },
 ]
 
-export default () => (
-  <StatusConsumer>
-    {({ status }) => {
-      const pages: Page[] = flatten(entries(status.providers).map(([providerName, providerStatus]) => {
-        return providerStatus.dashboardPages.map(p => ({
-          ...p,
-          path: `/provider/${providerName}/${kebabCase(p.title)}`,
-          description: p.description + ` (from provider ${providerName})`,
-        }))
-      }))
+export default () => {
+  const { status } = useContext(StatusContext)
 
-      return <Sidebar pages={[...builtinPages, ...pages]} />
-    }}
-  </StatusConsumer>
-)
+  const pages: Page[] = flatten(entries(status.providers).map(([providerName, providerStatus]) => {
+    return providerStatus.dashboardPages.map(p => ({
+      ...p,
+      path: `/provider/${providerName}/${kebabCase(p.title)}`,
+      description: p.description + ` (from provider ${providerName})`,
+    }))
+  }))
+
+  return <Sidebar pages={[...builtinPages, ...pages]} />
+}

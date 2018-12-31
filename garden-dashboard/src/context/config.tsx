@@ -10,23 +10,23 @@ import React from "react"
 
 import { fetchConfig } from "../api"
 import { FetchConfigResponse } from "../api/types"
-import FetchContainer from "../containers/fetch-container"
+import LoadContainer from "../containers/load-container"
+import { useFetch } from "../util/use-fetch"
+
+const ErrorMsg = () => <p>Error loading project configuration. Please try refreshing the page.</p>
 
 type Context = { config: FetchConfigResponse }
-const ConfigContext = React.createContext<Context | null>(null)
 
-const ConfigConsumer = ConfigContext.Consumer
+export const ConfigContext = React.createContext<Context | null>(null)
 
-const Error = () => <p>Error loading project configuration. Please try refreshing the page.</p>
+export const ConfigProvider: React.SFC = ({ children }) => {
+  const { data: config, loading, error } = useFetch<FetchConfigResponse>(fetchConfig)
 
-const ConfigProvider = ({ children }) => (
-  <FetchContainer<FetchConfigResponse> ErrorComponent={Error} skipSpinner fetchFn={fetchConfig}>
-    {({ data: config }) => (
-      <ConfigContext.Provider value={{ config }}>
+  return (
+    <ConfigContext.Provider value={{ config }}>
+      <LoadContainer error={error} ErrorComponent={ErrorMsg} loading={loading}>
         {children}
-      </ConfigContext.Provider>
-    )}
-  </FetchContainer>
-)
-
-export { ConfigProvider, ConfigConsumer }
+      </LoadContainer>
+    </ConfigContext.Provider>
+  )
+}

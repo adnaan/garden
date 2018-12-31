@@ -6,10 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import React from "react"
+import React, { useContext } from "react"
 
-import { ConfigConsumer } from "../context/config"
-import FetchContainer from "./fetch-container"
+import { ConfigContext } from "../context/config"
 
 import { fetchLogs } from "../api"
 // tslint:disable-next-line:no-unused (https://github.com/palantir/tslint/issues/4022)
@@ -17,15 +16,16 @@ import { FetchLogResponse } from "../api/types"
 
 import Logs from "../components/logs"
 import PageError from "../components/page-error"
+import { useFetch } from "../util/use-fetch"
+import LoadContainer from "./load-container"
 
-export default () => (
-  <FetchContainer<FetchLogResponse> ErrorComponent={PageError} fetchFn={fetchLogs}>
-    {({ data: logs }) => (
-      <ConfigConsumer>
-        {({ config }) => (
-          <Logs config={config} logs={logs} />
-        )}
-      </ConfigConsumer>
-    )}
-  </FetchContainer>
-)
+export default () => {
+  const { config } = useContext(ConfigContext)
+  const { data: logs, loading, error } = useFetch<FetchLogResponse>(fetchLogs)
+
+  return (
+    <LoadContainer error={error} ErrorComponent={PageError} loading={loading}>
+      <Logs config={config} logs={logs} />
+    </LoadContainer>
+  )
+}
